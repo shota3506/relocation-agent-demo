@@ -12,7 +12,10 @@ uv tool install google-agents-cli
 ## Development Phases
 
 ### Phase 1: Understand Requirements
-Before writing any code, understand the project's requirements, constraints, and success criteria.
+Before writing any code, thoroughly review the project overview and specifications:
+- Read `README.md` for project scope, feature sets, and architecture overview.
+- Read `docs/spec.md` for complete technical specifications, state schemas, tool definitions, and BDD scenarios.
+Understand all requirements, constraints, and success criteria before implementation.
 
 ### Phase 2: Build and Implement
 Implement agent logic in `app/`. Use `agents-cli playground` for interactive testing. Iterate based on user feedback.

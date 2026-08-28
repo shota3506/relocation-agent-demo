@@ -1,17 +1,21 @@
 # relocation-agent-demo
 
-Simple ReAct agent
+Relocation Concierge Agent built with **Google ADK 2.0**.
+Assists users throughout their moving journey — from discovering lifestyle preferences and rental search to upfront cost calculation and neighborhood due diligence. For detailed specifications and architecture, see [docs/spec.md](docs/spec.md).
+
 Agent generated with `agents-cli` version `1.4.1`
 
 ## Project Structure
 
 ```
 relocation-agent-demo/
-├── app/         # Core agent code
+├── app/                       # Core agent code
 │   ├── agent.py               # Main agent logic
 │   ├── fast_api_app.py        # FastAPI Backend server
 │   └── app_utils/             # App utilities and helpers
-├── tests/                     # Unit, integration, and load tests
+├── docs/                      # Technical specifications & design docs
+│   └── spec.md                # System specification
+├── tests/                     # Unit, integration, and eval tests
 ├── GEMINI.md                  # AI-assisted development guide
 └── pyproject.toml             # Project dependencies
 ```
@@ -56,7 +60,8 @@ You can also use features from the [ADK](https://adk.dev/) CLI with `uv run adk`
 | `agents-cli playground` | Launch local development environment                                                  |
 | `agents-cli lint`    | Run code quality checks                                                               |
 | `agents-cli eval`    | Evaluate agent behavior (generate, grade, analyze, and more — see `agents-cli eval --help`) |
-| `uv run pytest tests/unit tests/integration` | Run unit and integration tests                                                        || [A2A Inspector](https://github.com/a2aproject/a2a-inspector) | Launch A2A Protocol Inspector                                                        |
+| `uv run pytest tests/unit tests/integration` | Run unit and integration tests                                                        |
+| [A2A Inspector](https://github.com/a2aproject/a2a-inspector) | Launch A2A Protocol Inspector                                                        |
 
 ## 🛠️ Project Management
 
