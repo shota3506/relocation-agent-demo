@@ -57,9 +57,10 @@ Domain knowledge from `SKILL.md` is embedded directly into each sub-agent's prom
 
 | Agent Name | Mode | Domain Responsibility | Embedded Knowledge (`SKILL.md`) | Assigned Tools |
 |---|---|---|---|---|
-| **`root_concierge`** | `chat` | User dialog, intent routing, preference & dislike learning, moving consultation | `moving-cost-estimator` | `PreloadMemoryTool`, `request_input` |
+| **`root_concierge`** | `chat` | User dialog, intent routing, preference & dislike learning, moving consultation | - | Sub-agent delegation |
 | **`area_researcher`** | `mode="task"` | Neighborhood discovery, commute calculations, and local amenity due diligence | `area-due-diligence` | **Google Maps Grounding Lite MCP Toolset** (`search_places`, `compute_routes`, `resolve_names`) |
-| **`property_agent`** | `mode="task"` | Live web search on rental portals, upfront cost calculations, viewing scheduling | `live-property-search`<br>`moving-cost-estimator` | `search_active_rentals_web`, `estimate_upfront_costs`, `book_viewing_tool` (★ HITL Mock) |
+| **`property_agent`** | `mode="task"` | Live web search on rental portals & sites, vacancy inspection, viewing scheduling | `live-property-search` | `GoogleSearchTool`, `load_web_page`, `book_viewing_tool` (★ HITL Mock) |
+| **`cost_estimator`** | `mode="task"` | Itemized upfront move-in cost calculations & negotiation advice | `moving-cost-estimator` | `estimate_upfront_costs` |
 | **`preference_extractor`** | `mode="task"` | Extracting layout/aesthetic keywords from floor plans & interior photos | Multimodal Vision guidelines | `analyze_property_media` |
 
 ### 3.2. Dynamic Persona & State Governance
@@ -95,7 +96,8 @@ All tools are standalone, reusable function definitions. Tool assignment is conf
 | Tool Name | Execution Mode | Key Operations & Parameters | Return Data & Output | Description |
 |---|---|---|---|---|
 | **Google Maps Grounding Lite MCP**<br>(`https://mapstools.googleapis.com/mcp`) | Real Execution (Read) | • `search_places` (amenities, supermarkets, parks, clinics)<br>• `compute_routes` (commute travel duration & distance)<br>• `resolve_names` (Place ID resolution) | Standardized MCP structured JSON output | Interacts with official Google Maps Platform Grounding Lite service to explore candidate neighborhoods and measure commute routes. |
-| **`search_active_rentals_web`** | Real Web Search (Read) | • `area_or_station` (str)<br>• `max_rent_yen` (int)<br>• `layout` (str, optional)<br>• `must_haves` (list[str], optional)<br>• `dislikes` (list[str], optional) | `status`, `total_found`, `properties` (name, rent, walk_min, layout, url, features) | Performs real-time web portal search and page retrieval to find active, currently vacant rental listings. |
+| **`GoogleSearchTool`** | Real Web Search (Read) | • query (str) | Real-time search engine organic results | Performs live Google Search across open web sources, rental portals (SUUMO, HOME'S, Zillow, etc.) for active vacancies. |
+| **`load_web_page`** | Real Web Retrieval (Read) | • url (str) | Full text and metadata of target webpage | Retrieves listing details (rent, floor, amenities, pet rules) directly from discovered property webpages. |
 | **`estimate_upfront_costs`** | Calculation Logic (Read) | • `monthly_rent_yen` (int, optional — defaults to target budget)<br>• `management_fee_yen` (int, default: 10000)<br>• `has_pet` (bool, default: False)<br>• `deposit_months` (float, optional)<br>• `key_money_months` (float, optional) | `monthly_rent_yen`, `total_upfront_yen`, `rent_multiplier`, `breakdown` (itemized fees), `cost_saving_tips`, `a2ui_card` | Calculates exact move-in costs if property terms are known, or simulates standard benchmark costs (~4.5x rent) from budget. |
 | **`analyze_property_media`** | Real Vision (Read) | • `media_file_paths` (list[str] of image paths or URLs) | `extracted_features` (counter kitchen, walk-in closet, flooring tone, daylighting) | Utilizes Gemini Multimodal Vision to extract layout specifications and aesthetic preferences from uploaded images. |
 | **`book_viewing_mock`** | **Mock (★ HITL Gate)** | • `property_id` (str)<br>• `preferred_datetime` (str)<br>• `applicant_name` (str)<br>• `contact_phone` (str) | `booking_id`, `status` (confirmed), `confirmation_message`, `meeting_instructions` | Simulates booking a viewing appointment. **Requires explicit user approval (`require_confirmation=True`) before executing.** |
