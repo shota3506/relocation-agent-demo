@@ -1,17 +1,3 @@
-# Copyright 2026 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import asyncio
 import json
 import logging
@@ -48,6 +34,18 @@ A2A_RPC_URL = BASE_URL + "/a2a/app/"
 AGENT_CARD_URL = A2A_RPC_URL + ".well-known/agent-card.json"
 
 HEADERS = {"Content-Type": "application/json"}
+
+
+def _has_llm_credentials() -> bool:
+    """Check if credentials for LLM inference (Gemini API or Vertex AI) are available."""
+    return bool(
+        os.environ.get("GEMINI_API_KEY")
+        or os.environ.get("GOOGLE_API_KEY")
+        or (
+            os.environ.get("GOOGLE_CLOUD_PROJECT")
+            and os.environ.get("GOOGLE_GENAI_USE_VERTEXAI")
+        )
+    )
 
 
 def log_output(pipe: Any, log_func: Any) -> None:
@@ -129,6 +127,11 @@ def server_fixture(request: Any) -> Iterator[subprocess.Popen[str]]:
 
 def test_adk_run_sse(server_fixture: subprocess.Popen[str]) -> None:
     """Test the native ADK route (/run_sse) end to end."""
+    if not _has_llm_credentials():
+        pytest.skip(
+            "Skipping LLM live integration test: GEMINI_API_KEY or (GOOGLE_CLOUD_PROJECT and GOOGLE_GENAI_USE_VERTEXAI) is not configured."
+        )
+
     logger.info("Starting ADK /run_sse test")
     user_id = f"user_{uuid.uuid4()}"
     session_data = {"state": {"preferred_language": "English", "visit_count": 1}}
@@ -173,6 +176,11 @@ def test_adk_run_sse(server_fixture: subprocess.Popen[str]) -> None:
 
 def test_a2a_chat_stream(server_fixture: subprocess.Popen[str]) -> None:
     """Test the A2A route using the JSON-RPC streaming protocol."""
+    if not _has_llm_credentials():
+        pytest.skip(
+            "Skipping LLM live integration test: GEMINI_API_KEY or (GOOGLE_CLOUD_PROJECT and GOOGLE_GENAI_USE_VERTEXAI) is not configured."
+        )
+
     logger.info("Starting A2A chat stream test")
 
     async def _stream() -> list[StreamResponse]:

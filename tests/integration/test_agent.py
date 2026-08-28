@@ -1,17 +1,6 @@
-# Copyright 2026 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+import os
 
+import pytest
 from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
@@ -20,11 +9,27 @@ from google.genai import types
 from app.agent import root_agent
 
 
+def _has_llm_credentials() -> bool:
+    """Check if credentials for LLM inference (Gemini API or Vertex AI) are available."""
+    return bool(
+        os.environ.get("GEMINI_API_KEY")
+        or os.environ.get("GOOGLE_API_KEY")
+        or (
+            os.environ.get("GOOGLE_CLOUD_PROJECT")
+            and os.environ.get("GOOGLE_GENAI_USE_VERTEXAI")
+        )
+    )
+
+
 def test_agent_stream() -> None:
     """
     Integration test for the agent stream functionality.
     Tests that the agent returns valid streaming responses.
     """
+    if not _has_llm_credentials():
+        pytest.skip(
+            "Skipping LLM live integration test: GEMINI_API_KEY or (GOOGLE_CLOUD_PROJECT and GOOGLE_GENAI_USE_VERTEXAI) is not configured."
+        )
 
     session_service = InMemorySessionService()
 
