@@ -59,6 +59,10 @@ known-first-party = ["app", "frontend"]
 # ty is Astral's Rust-based type checker (same team as ruff/uv)
 # See: https://docs.astral.sh/ty/
 
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+
 [tool.ty.environment]
 python-version = "3.10"
 
