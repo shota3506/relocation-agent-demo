@@ -10,7 +10,7 @@ def test_get_maps_mcp_toolset_official_grounding_lite_configuration():
     conn_params = toolset.connection_params
     assert conn_params.url == "https://mapstools.googleapis.com/mcp"
 
-    # Verify explicitly exposed official Grounding Lite tools (weather excluded)
+    # Verify explicitly exposed official Grounding Lite tools
     assert toolset.tool_filter == EXPOSED_MAPS_TOOLS
     assert "search_places" in EXPOSED_MAPS_TOOLS
     assert "compute_routes" in EXPOSED_MAPS_TOOLS
