@@ -13,8 +13,8 @@ dependencies = [
     "a2a-sdk[http-server]>=1.0,<2",
     "aiohttp>=3.13.4",
     "google-cloud-logging>=3.12.0,<4.0.0",
-    "beautifulsoup4>=4.12.0",
-    "lxml>=5.0.0",
+    "beautifulsoup4>=4.15.0",
+    "lxml>=6.1.2",
 ]
 requires-python = ">=3.11,<3.14"
 
@@ -84,7 +84,7 @@ deprecated = "ignore"
 
 [tool.codespell]
 ignore-words-list = "rouge"
-skip = "./locust_env/*,uv.lock,.venv,./frontend,**/package-lock.json"
+skip = "./locust_env/*,uv.lock,.venv,./frontend,**/package-lock.json,./artifacts/*"
 
 
 [build-system]

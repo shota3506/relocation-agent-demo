@@ -1,29 +1,86 @@
 {
   "eval_cases": [
     {
-      "eval_case_id": "greeting",
+      "eval_case_id": "area_due_diligence_dual_commute",
       "prompt": {
         "role": "user",
-        "parts": [{"text": "Hello, what can you help me with?"}]
-      }
-    },
-    {
-      "eval_case_id": "weather_query",
-      "prompt": {
-        "role": "user",
-        "parts": [{"text": "What's the weather like in San Francisco?"}]
-      }
-    },
-    {
-      "eval_case_id": "capital_lookup",
-      "prompt": {
-        "role": "user",
-        "parts": [{"text": "What is the capital of France?"}]
+        "parts": [
+          {
+            "text": "My partner and I are moving. I commute to Shibuya Station, and my partner commutes to Tokyo Station (Marunouchi). Could you evaluate whether Meguro is a balanced area for both of us, and check for supermarkets and parks within walking distance?"
+          }
+        ]
       },
       "reference": {
         "response": {
           "role": "model",
-          "parts": [{"text": "The capital of France is Paris."}]
+          "parts": [
+            {
+              "text": "Meguro offers balanced transit access to both Shibuya (~5-10 mins via JR Yamanote Line) and Tokyo/Marunouchi (~20-25 mins via JR Yamanote or Mita Line). Walkable amenities around Meguro station include major supermarkets (Atre Meguro, Precce) and parks (Meguro River parkway, Rinshinomori Park)."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "eval_case_id": "property_search_with_strict_dislikes",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Please search for available 1LDK apartments in Meguro with a monthly budget under 200,000 JPY. I strictly dislike 1st-floor apartments and 3-point unit baths (must be separate bath/toilet). Please provide the specific listing webpage URLs."
+          }
+        ]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [
+            {
+              "text": "Candidate 1LDK apartments in Meguro on upper floors (2nd floor or above) with separate bathroom and toilet, strictly within the 200,000 JPY budget, accompanied by direct source webpage links."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "eval_case_id": "upfront_cost_estimation_with_pet",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "How much upfront moving cost should I expect for an apartment with 180,000 JPY monthly rent if I have a pet dog? Please break down the itemized fees and share cost-saving tips."
+          }
+        ]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [
+            {
+              "text": "For a 180,000 JPY rent with a pet, upfront costs total approximately 800,000 to 900,000 JPY (~4.5x-5.0x rent). Breakdown includes: Security Deposit (2 months with pet: ¥360,000), Key Money (1 month: ¥180,000), Agency Fee (1.1x: ¥198,000), Advance First Month Rent (¥180,000 + fee), Guarantor Fee (~¥95,000), Insurance (~¥20,000), and Key Exchange (~¥22,000). Negotiation tips: request 0 key money or a 0.5-month broker fee discount."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "eval_case_id": "concierge_onboarding_consultation",
+      "prompt": {
+        "role": "user",
+        "parts": [
+          {
+            "text": "Hello! I'm planning to move to Tokyo next spring. Can you guide me through finding a suitable neighborhood and apartment?"
+          }
+        ]
+      },
+      "reference": {
+        "response": {
+          "role": "model",
+          "parts": [
+            {
+              "text": "Warm and structured welcome asking for the user's workplace/commute destination, moving timeline, budget, household structure (single/couple/family), and key lifestyle preferences or dislikes."
+            }
+          ]
         }
       }
     }

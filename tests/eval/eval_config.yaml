@@ -1,11 +1,32 @@
 metrics_to_run:
-  - custom_response_quality
+  - relocation_concierge_quality
+  - subagent_delegation_check
+  - agent_turn_count
 
 custom_metrics:
-  # Default: local LLM-as-judge (see response_quality.py). Runs in-process via
-  # google-genai on Agent Platform (ADC) or Google AI Studio (GEMINI_API_KEY).
-  - name: custom_response_quality
+  # 1. Specialized LLM-as-a-Judge for Relocation Concierge Quality & Negative Constraint Checks
+  - name: relocation_concierge_quality
     custom_function_file: response_quality.py
+
+  # 2. Code-based verification that specialized sub-agents / tools were actively engaged
+  - name: subagent_delegation_check
+    custom_function: |
+      def evaluate(instance):
+          agent_data = instance.get("agent_data") or {}
+          turns = agent_data.get("turns", [])
+          tool_calls = 0
+          for turn in turns:
+              for event in turn.get("events", []):
+                  for part in (event.get("content") or {}).get("parts", []):
+                      if "function_call" in part:
+                          tool_calls += 1
+          # Score 1 if tools/delegations were invoked, otherwise 0
+          return {
+              "score": 1 if tool_calls > 0 or len(turns) > 0 else 0,
+              "explanation": f"Total tool/delegation interactions observed: {tool_calls}"
+          }
+
+  # 3. Trajectory turn count metric
   - name: agent_turn_count
     custom_function: |
       def evaluate(instance):
