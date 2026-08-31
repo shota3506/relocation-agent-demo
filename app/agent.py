@@ -12,7 +12,9 @@ from app.area_researcher import area_researcher
 from app.cost_estimator import cost_estimator
 from app.property_agent import property_agent
 
-MODEL = "gemini-3.7-flash"
+# Strategic Model Routing: Flagship 3.7-flash model for multi-agent planning and orchestration
+COORDINATOR_MODEL = "gemini-3.7-flash"
+SUMMARIZER_MODEL = "gemini-3.7-flash"
 
 
 RELOCATION_CONCIERGE_INSTRUCTION = """\
@@ -77,7 +79,7 @@ async def after_agent_callback(
 root_agent = Agent(
     name="root_agent",
     model=Gemini(
-        model=MODEL,
+        model=COORDINATOR_MODEL,
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction=RELOCATION_CONCIERGE_INSTRUCTION,
@@ -94,7 +96,7 @@ app = App(
     events_compaction_config=EventsCompactionConfig(
         token_threshold=32000,
         event_retention_size=5,
-        summarizer=LlmEventSummarizer(llm=Gemini(model=MODEL)),
+        summarizer=LlmEventSummarizer(llm=Gemini(model=SUMMARIZER_MODEL)),
     ),
     # Context Caching: cache system prompts & static context > 2048 tokens (TTL 30 mins)
     context_cache_config=ContextCacheConfig(

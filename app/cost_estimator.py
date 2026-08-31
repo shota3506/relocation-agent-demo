@@ -9,7 +9,8 @@ from pydantic import BaseModel, Field
 
 from app.property_tools import estimate_upfront_costs
 
-MODEL = "gemini-3.7-flash"
+# Strategic Model Routing: Lightweight 3.5-flash model for deterministic math and financial breakdowns
+MODEL = "gemini-3.5-flash"
 
 # Load ONLY the moving-cost-estimator skill for this specialist agent
 _SKILLS_DIR = Path(__file__).parent / "skills" / "moving-cost-estimator"

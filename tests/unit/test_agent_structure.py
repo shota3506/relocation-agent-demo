@@ -26,11 +26,22 @@ def test_agent_subagent_delegation_structure():
     assert "cost_estimator" in sub_names
 
 
+def test_strategic_model_routing_across_agents():
+    """Verify task-appropriate strategic model routing across the agent hierarchy."""
+    # Root coordinator: Flagship 3.7-flash model for multi-agent synthesis & planning
+    assert root_agent.model.model == "gemini-3.7-flash"
+    # Specialist sub-agents: Flash models tailored for MCP, web scraping, and math
+    assert area_researcher.model.model == "gemini-3.7-flash"
+    assert property_agent.model.model == "gemini-3.7-flash"
+    assert cost_estimator.model.model == "gemini-3.5-flash"
+
+
 def test_area_researcher_subagent_configuration():
-    """Verify area_researcher has strict output_schema and ONLY area-due-diligence skill."""
+    """Verify area_researcher has strict output_schema, gemini-3.7-flash, and ONLY area-due-diligence skill."""
     assert area_researcher.name == "area_researcher"
     assert area_researcher.mode == "task"
     assert area_researcher.output_schema == AreaResearchOutput
+    assert area_researcher.model.model == "gemini-3.7-flash"
 
     # Verify McpToolset and SkillToolset are attached
     assert any(isinstance(t, McpToolset) for t in area_researcher.tools)
@@ -42,10 +53,11 @@ def test_area_researcher_subagent_configuration():
 
 
 def test_property_agent_subagent_configuration():
-    """Verify property_agent has strict output_schema, real search tools, and live-property-search skill."""
+    """Verify property_agent has strict output_schema, gemini-3.7-flash, search tools, and live-property-search skill."""
     assert property_agent.name == "property_agent"
     assert property_agent.mode == "task"
     assert property_agent.output_schema == PropertySearchOutput
+    assert property_agent.model.model == "gemini-3.7-flash"
 
     # Verify real web search tools and dedicated skill are attached
     assert any(isinstance(t, GoogleSearchTool) for t in property_agent.tools)
@@ -59,10 +71,11 @@ def test_property_agent_subagent_configuration():
 
 
 def test_cost_estimator_subagent_configuration():
-    """Verify cost_estimator has strict output_schema and ONLY moving-cost-estimator skill."""
+    """Verify cost_estimator has strict output_schema, lightweight gemini-3.5-flash, and ONLY moving-cost-estimator skill."""
     assert cost_estimator.name == "cost_estimator"
     assert cost_estimator.mode == "task"
     assert cost_estimator.output_schema == CostEstimationOutput
+    assert cost_estimator.model.model == "gemini-3.5-flash"
 
     # Verify estimation tool and dedicated skill
     assert estimate_upfront_costs in cost_estimator.tools

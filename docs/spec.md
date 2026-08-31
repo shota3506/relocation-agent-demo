@@ -57,13 +57,13 @@ flowchart TD
 
 Domain knowledge from `SKILL.md` is embedded directly into each sub-agent's prompt instructions to guide expert evaluations.
 
-| Agent Name | Mode | Domain Responsibility | Embedded Knowledge (`SKILL.md`) | Assigned Tools |
-|---|---|---|---|---|
-| **`root_concierge`** | `chat` | User dialog, intent routing, preference & dislike learning, moving consultation | - | `PreloadMemoryTool`, Sub-agent delegation |
-| **`area_researcher`** | `mode="task"` | Neighborhood discovery, commute calculations, and local amenity due diligence | `area-due-diligence` | **Google Maps Grounding Lite MCP Toolset** (`search_places`, `compute_routes`, `resolve_names`) |
-| **`property_agent`** | `mode="task"` | Live web search on rental portals & sites, vacancy inspection, viewing scheduling | `live-property-search` | `GoogleSearchTool`, `load_web_page`, `book_viewing_tool` (★ HITL Mock) |
-| **`cost_estimator`** | `mode="task"` | Itemized upfront move-in cost calculations & negotiation advice | `moving-cost-estimator` | `estimate_upfront_costs` |
-| **`preference_extractor`** | `mode="task"` | Extracting layout/aesthetic keywords from floor plans & interior photos | Multimodal Vision guidelines | `analyze_property_media` |
+| Agent Name | Mode | Assigned Model & Rationale | Domain Responsibility | Embedded Knowledge (`SKILL.md`) | Assigned Tools |
+|---|---|---|---|---|---|
+| **`root_concierge`** | `chat` | **`gemini-3.7-flash`**<br>(Flagship multi-agent reasoning, user preference synthesis) | User dialog, intent routing, preference & dislike learning, moving consultation | - | `PreloadMemoryTool`, Sub-agent delegation |
+| **`area_researcher`** | `mode="task"` | **`gemini-3.7-flash`**<br>(High-speed parallel MCP tool calls) | Neighborhood discovery, commute calculations, and local amenity due diligence | `area-due-diligence` | **Google Maps Grounding Lite MCP Toolset** (`search_places`, `compute_routes`, `resolve_names`) |
+| **`property_agent`** | `mode="task"` | **`gemini-3.7-flash`**<br>(Fast web scraping & HTML text processing) | Live web search on rental portals & sites, vacancy inspection, viewing scheduling | `live-property-search` | `GoogleSearchTool`, `load_web_page`, `book_viewing_tool` (★ HITL Mock) |
+| **`cost_estimator`** | `mode="task"` | **`gemini-3.5-flash`**<br>(Lightweight, high-throughput, deterministic math) | Itemized upfront move-in cost calculations & negotiation advice | `moving-cost-estimator` | `estimate_upfront_costs` |
+| **`preference_extractor`** | `mode="task"` | **`gemini-3.7-flash`**<br>(Multimodal Vision layout understanding) | Extracting layout/aesthetic keywords from floor plans & interior photos | Multimodal Vision guidelines | `analyze_property_media` |
 
 ### 3.2. Dynamic Persona & State Governance
 - **Tone**: Empathetic, supportive, structured, and professional.
