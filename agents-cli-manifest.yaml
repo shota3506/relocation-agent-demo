@@ -1,14 +1,13 @@
-name: "relocation-agent-demo"
-acli_version: "1.4.1"
-agent_directory: "app"
-region: "us-east1"
-base_template: "adk"
-generated_at: "2026-08-28T01:27:40.409270+00:00"
-language: "python"
+name: relocation-agent-demo
+acli_version: 1.4.2
+agent_directory: app
+region: us-east1
+base_template: adk
+generated_at: '2026-08-28T01:27:40.409270+00:00'
+language: python
 create_params:
-  deployment_target: "none"
-  session_type: "in_memory"
-  cicd_runner: "skip"
+  deployment_target: agent_runtime
+  cicd_runner: skip
   is_a2a: true
-  agent_gateway: False
-  agent_guidance_filename: "GEMINI.md"
+  agent_gateway: false
+  agent_guidance_filename: GEMINI.md

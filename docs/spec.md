@@ -183,10 +183,14 @@ Feature: Relocation Concierge - Moving & Housing Assistance Agent
 
 ---
 
-## 9. Infrastructure & Deployment
+## 9. Infrastructure as Code (Terraform) & Deployment
 
-- **Deployment Targets**: Google Cloud Run (Serverless), Vertex AI Agent Runtime, Google Kubernetes Engine (GKE).
-- **IaC & Security**: Terraform provisioning, least-privilege IAM service accounts, and Secret Manager for Google Maps API keys.
+- **Deployment Target**: Vertex AI Agent Runtime (`agent_runtime`) & Cloud Run (Serverless).
+- **Minimal Terraform IaC Configuration (`deployment/terraform/`)**:
+  - `main.tf`: Single minimal configuration enabling required GCP APIs, creating the least-privilege agent Service Account (`roles/aiplatform.user`, `roles/logging.logWriter`, `roles/cloudtrace.agent`, `roles/dlp.user`, `roles/storage.objectUser`, `roles/secretmanager.secretAccessor`), and provisioning the logs/artifacts GCS bucket.
+  - `variables.tf`: Input variables (`project_id`, `region`, `project_name`).
+  - `outputs.tf`: Outputs (`project_id`, `service_account_email`, `logs_bucket_name`).
+  - `terraform.tfvars.example`: Example variables template with safe placeholders.
 
 ---
 
