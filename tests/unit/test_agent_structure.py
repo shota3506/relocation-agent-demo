@@ -7,9 +7,9 @@ from google.adk.tools.mcp_tool.mcp_toolset import McpToolset
 from google.adk.tools.skill_toolset import SkillToolset
 
 from app.agent import root_agent
-from app.area_researcher import area_researcher
-from app.cost_estimator import cost_estimator
-from app.property_agent import property_agent
+from app.area_researcher import AreaResearchOutput, area_researcher
+from app.cost_estimator import CostEstimationOutput, cost_estimator
+from app.property_agent import PropertySearchOutput, property_agent
 from app.property_tools import (
     book_viewing_tool,
     estimate_upfront_costs,
@@ -27,9 +27,10 @@ def test_agent_subagent_delegation_structure():
 
 
 def test_area_researcher_subagent_configuration():
-    """Verify area_researcher has ONLY area-due-diligence skill."""
+    """Verify area_researcher has strict output_schema and ONLY area-due-diligence skill."""
     assert area_researcher.name == "area_researcher"
     assert area_researcher.mode == "task"
+    assert area_researcher.output_schema == AreaResearchOutput
 
     # Verify McpToolset and SkillToolset are attached
     assert any(isinstance(t, McpToolset) for t in area_researcher.tools)
@@ -41,9 +42,10 @@ def test_area_researcher_subagent_configuration():
 
 
 def test_property_agent_subagent_configuration():
-    """Verify property_agent has real GoogleSearchTool, load_web_page, and live-property-search skill."""
+    """Verify property_agent has strict output_schema, real search tools, and live-property-search skill."""
     assert property_agent.name == "property_agent"
     assert property_agent.mode == "task"
+    assert property_agent.output_schema == PropertySearchOutput
 
     # Verify real web search tools and dedicated skill are attached
     assert any(isinstance(t, GoogleSearchTool) for t in property_agent.tools)
@@ -57,9 +59,10 @@ def test_property_agent_subagent_configuration():
 
 
 def test_cost_estimator_subagent_configuration():
-    """Verify cost_estimator has ONLY moving-cost-estimator skill."""
+    """Verify cost_estimator has strict output_schema and ONLY moving-cost-estimator skill."""
     assert cost_estimator.name == "cost_estimator"
     assert cost_estimator.mode == "task"
+    assert cost_estimator.output_schema == CostEstimationOutput
 
     # Verify estimation tool and dedicated skill
     assert estimate_upfront_costs in cost_estimator.tools

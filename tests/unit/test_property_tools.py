@@ -32,6 +32,15 @@ def test_estimate_upfront_costs_exact_with_pet():
     assert len(result["cost_saving_tips"]) >= 4
 
 
+def test_estimate_upfront_costs_invalid_input_guided_recovery():
+    """Verify guided error handling when invalid negative rent is supplied."""
+    result = estimate_upfront_costs(monthly_rent_yen=-50000)
+    assert result["status"] == "error"
+    assert result["error_code"] == "INVALID_RENT_AMOUNT"
+    assert "recovery_guidance" in result
+    assert "positive" in result["recovery_guidance"].lower()
+
+
 def test_book_viewing_mock_and_hitl_configuration():
     """Verify viewing booking mock logic and human approval gate."""
     res = book_viewing_mock(
@@ -47,3 +56,16 @@ def test_book_viewing_mock_and_hitl_configuration():
 
     # Test HITL FunctionTool configuration (require_confirmation)
     assert getattr(book_viewing_tool, "_require_confirmation", False) is True
+
+
+def test_book_viewing_mock_invalid_input_guided_recovery():
+    """Verify guided recovery advice when booking without applicant name or contact."""
+    res = book_viewing_mock(
+        property_id="prop-bk-201",
+        preferred_datetime="2026-08-30 14:00",
+        applicant_name="",
+        contact_phone="",
+    )
+    assert res["status"] == "error"
+    assert res["error_code"] == "MISSING_APPLICANT_NAME"
+    assert "recovery_guidance" in res
