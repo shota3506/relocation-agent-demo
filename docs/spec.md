@@ -30,19 +30,21 @@ created_at: "2026-08-28"
 
 ```mermaid
 flowchart TD
-    User([User / Client]) <--> Root["Root Concierge Agent<br/>(Dialog & Orchestration)"]
+    User([User / Client]) <--> Root["Root Concierge Agent<br/>(Dialog, Memory & Orchestration)"]
     
     subgraph MultiAgentSystem["Specialist Sub-agents (Task Delegation)"]
         Root -->|"Area & Commute"| AreaAgent["Area Researcher<br/>(Google Maps MCP)"]
-        Root -->|"Live Search & Costs"| PropAgent["Property Agent<br/>(Live Web Search & Viewing)"]
+        Root -->|"Live Search & Viewing"| PropAgent["Property Agent<br/>(Live Web Search & Viewing)"]
+        Root -->|"Cost & Financials"| CostAgent["Cost Estimator<br/>(Upfront Moving Expenses)"]
         Root -->|"Analyze Images"| PrefAgent["Preference Extractor<br/>(Gemini Multimodal Vision)"]
     end
 
     subgraph ToolsAndIntegrations["Tools & Services"]
-        AreaAgent --> MapsMCP["Google Maps MCP Server<br/>(Places, Directions, Elevation)"]
-        PropAgent --> WebSearch["Live Web Portal Search & Fetcher"]
-        PropAgent --> CostTool["Upfront Cost Estimator"]
+        Root --> PreloadMem["PreloadMemoryTool<br/>(Memory Bank Cross-session Recall)"]
+        AreaAgent --> MapsMCP["Google Maps Grounding Lite MCP<br/>(Places, Directions, Elevation)"]
+        PropAgent --> WebSearch["GoogleSearchTool & load_web_page"]
         PropAgent -->|"★ User Confirmation (HITL)"| BookingMock["Book Viewing (Mock)"]
+        CostAgent --> CostTool["estimate_upfront_costs"]
         PrefAgent --> VisionTool["Property Media Analyzer"]
     end
 ```
@@ -57,7 +59,7 @@ Domain knowledge from `SKILL.md` is embedded directly into each sub-agent's prom
 
 | Agent Name | Mode | Domain Responsibility | Embedded Knowledge (`SKILL.md`) | Assigned Tools |
 |---|---|---|---|---|
-| **`root_concierge`** | `chat` | User dialog, intent routing, preference & dislike learning, moving consultation | - | Sub-agent delegation |
+| **`root_concierge`** | `chat` | User dialog, intent routing, preference & dislike learning, moving consultation | - | `PreloadMemoryTool`, Sub-agent delegation |
 | **`area_researcher`** | `mode="task"` | Neighborhood discovery, commute calculations, and local amenity due diligence | `area-due-diligence` | **Google Maps Grounding Lite MCP Toolset** (`search_places`, `compute_routes`, `resolve_names`) |
 | **`property_agent`** | `mode="task"` | Live web search on rental portals & sites, vacancy inspection, viewing scheduling | `live-property-search` | `GoogleSearchTool`, `load_web_page`, `book_viewing_tool` (★ HITL Mock) |
 | **`cost_estimator`** | `mode="task"` | Itemized upfront move-in cost calculations & negotiation advice | `moving-cost-estimator` | `estimate_upfront_costs` |
@@ -67,6 +69,7 @@ Domain knowledge from `SKILL.md` is embedded directly into each sub-agent's prom
 - **Tone**: Empathetic, supportive, structured, and professional.
 - **Dynamic Parameter**: `{concierge_persona}` (e.g., family-oriented warmth vs. fast-paced executive clarity).
 - **State Initialization**: `before_agent_callback` ensures all required `user:` state keys (`user:family_structure`, `user:lifestyle_priorities`, `user:workplace`, `user:dislikes`, `user:viewing_history`) are initialized to prevent runtime exceptions.
+- **Asynchronous Memory Generation**: `after_agent_callback` persists conversation sessions to Memory Bank via `await callback_context.add_session_to_memory()`.
 
 ---
 
@@ -81,8 +84,8 @@ Domain knowledge from `SKILL.md` is embedded directly into each sub-agent's prom
 | **App Scope** | `app:*` | Application-wide static configuration. | Global system parameters & rate limits |
 
 ### 4.2. Caching & Compaction
-- **Context Caching**: Caches system prompts > 2,048 tokens (TTL: 1,800s).
-- **Token-based Compaction**: Summarizes session history when context reaches **32,000 tokens**, preserving the last 6 raw interaction events.
+- **Context Caching (`ContextCacheConfig`)**: Caches system prompts and static context > **2,048 tokens** (TTL: 1,800s).
+- **Token-based Compaction (`EventsCompactionConfig`)**: Automatically summarizes session history when prompt context reaches **32,000 tokens** via `LlmEventSummarizer`, preserving the last 5 raw interaction events.
 - **Artifacts Service**: Stores uploaded floor plans and photos (JPEG/PNG) in GCS (`relocation-artifacts-prod`) or local in-memory store for development.
 
 ---
