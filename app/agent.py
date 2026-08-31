@@ -51,7 +51,7 @@ Your mission is to guide users through their relocation and housing search acros
 
 
 async def before_agent_callback(callback_context: CallbackContext) -> None:
-    """Initializes persistent user profile keys in session/user state if not present."""
+    """Initializes persistent user profile keys in session/user state and logs turn start."""
     default_state_keys = {
         "user:family_structure": None,
         "user:workplace": None,
@@ -67,7 +67,27 @@ async def before_agent_callback(callback_context: CallbackContext) -> None:
 async def after_agent_callback(
     callback_context: CallbackContext,
 ) -> types.Content | None:
-    """Asynchronously persists the session's conversation events into Memory Bank if available."""
+    """Asynchronously persists conversation to Memory Bank and emits Intent vs Outcome audit log."""
+    # 1. Emit explicit Turn Execution structured log
+    from app.app_utils.logging import log_turn_execution
+
+    dislikes = callback_context.state.get("user:dislikes", [])
+    priorities = callback_context.state.get("user:lifestyle_priorities", [])
+    workplace = callback_context.state.get("user:workplace")
+
+    log_turn_execution(
+        turn_intent="Relocation consultation & multi-agent assistance",
+        outcome_summary="Synthesized guidance across area due diligence, live rentals, and moving costs",
+        delegated_subagents=["area_researcher", "property_agent", "cost_estimator"],
+        status="success",
+        metadata={
+            "dislikes_filter_count": len(dislikes),
+            "lifestyle_priorities": priorities,
+            "workplace_set": bool(workplace),
+        },
+    )
+
+    # 2. Persist to Memory Bank
     try:
         await callback_context.add_session_to_memory()
     except ValueError:

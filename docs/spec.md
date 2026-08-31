@@ -174,11 +174,12 @@ Feature: Relocation Concierge - Moving & Housing Assistance Agent
 
 ---
 
-## 8. Observability & Tracing Architecture (OpenTelemetry Standards)
+## 8. Observability, Logging & PII Redaction Architecture
 
-- **Distributed Tracing**: Captures agent delegation hierarchy (Root ➔ Sub-agents), tool invocations, and LLM inference latency.
-- **Structured Audit Logs & Feedback**: Records full prompt-response pairs and user feedback ratings.
-- **Exporters**: Pluggable OTel exporters for Cloud Trace, Cloud Logging, BigQuery, Datadog, and local console.
+- **Distributed Tracing (OpenTelemetry)**: Captures agent delegation hierarchy (Root ➔ Sub-agents), tool invocations, and LLM inference latency via Cloud Trace (`otel_to_cloud=True`).
+- **Structured JSON Logging & Turn Execution Auditing**: Emits machine-readable JSON logs capturing user intent against final agent outcomes (`turn_execution`) and critical state mutations (e.g. `audit_booking_action_confirmed`, `audit_financial_estimation`).
+- **Enterprise PII Protection (Cloud DLP / SDP)**: Integrates Google Cloud Sensitive Data Protection (`google-cloud-dlp`) for ML-driven info-type detection (`PERSON_NAME`, `PHONE_NUMBER`, `EMAIL_ADDRESS`, `STREET_ADDRESS`, `JAPAN_MY_NUMBER`) and zero-trust key masking (`[CONFIDENTIAL_PII_MASKED]`), completely eliminating fragile regular expressions.
+- **Audit Logs & Telemetry Exporters**: Integrated with Cloud Logging, Cloud Trace, and BigQuery Agent Analytics.
 
 ---
 

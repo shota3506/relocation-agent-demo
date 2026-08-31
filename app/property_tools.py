@@ -4,6 +4,8 @@ from typing import Any
 from google.adk.tools import FunctionTool
 from pydantic import BaseModel, Field
 
+from app.app_utils.logging import log_structured_event
+
 
 class UpfrontCostItemizedBreakdown(BaseModel):
     deposit_yen: int = Field(description="Security deposit in JPY (敷金)")
@@ -83,7 +85,7 @@ def estimate_upfront_costs(
     """
     # Guided Error Recovery: Validate positive inputs
     if monthly_rent_yen is not None and monthly_rent_yen <= 0:
-        return {
+        err_resp = {
             "status": "error",
             "error_code": "INVALID_RENT_AMOUNT",
             "message": f"Monthly rent must be a positive integer, received: {monthly_rent_yen}",
@@ -92,14 +94,26 @@ def estimate_upfront_costs(
                 "(e.g. 150,000 JPY), or call `estimate_upfront_costs()` without `monthly_rent_yen` to calculate using standard market benchmark."
             ),
         }
+        log_structured_event(
+            event_type="audit_financial_estimation_error",
+            status="error",
+            payload=err_resp,
+        )
+        return err_resp
 
     if management_fee_yen < 0:
-        return {
+        err_resp = {
             "status": "error",
             "error_code": "INVALID_MANAGEMENT_FEE",
             "message": f"Management fee cannot be negative, received: {management_fee_yen}",
             "recovery_guidance": "Please provide a non-negative management fee (typically between 5,000 and 15,000 JPY), or omit it to use the default 10,000 JPY.",
         }
+        log_structured_event(
+            event_type="audit_financial_estimation_error",
+            status="error",
+            payload=err_resp,
+        )
+        return err_resp
 
     is_benchmark = monthly_rent_yen is None
     rent = monthly_rent_yen if monthly_rent_yen is not None else 150000
@@ -142,9 +156,9 @@ def estimate_upfront_costs(
 
     response_data = UpfrontCostResponse(
         status="success",
-        mode="General Market Benchmark"
-        if is_benchmark
-        else "Exact Property Simulation",
+        mode=(
+            "General Market Benchmark" if is_benchmark else "Exact Property Simulation"
+        ),
         is_benchmark=is_benchmark,
         monthly_rent_yen=rent,
         management_fee_yen=management_fee_yen,
@@ -167,7 +181,18 @@ def estimate_upfront_costs(
             "total": total_upfront_yen,
         },
     )
-    return response_data.model_dump()
+    result_dict = response_data.model_dump()
+    log_structured_event(
+        event_type="audit_financial_estimation",
+        status="success",
+        payload={
+            "rent_yen": rent,
+            "total_upfront_yen": total_upfront_yen,
+            "multiplier": rent_multiplier,
+            "is_benchmark": is_benchmark,
+        },
+    )
+    return result_dict
 
 
 class BookingInstructions(BaseModel):
@@ -185,8 +210,12 @@ class BookingViewingResponse(BaseModel):
     )
     property_id: str = Field(description="Target property ID or URL")
     preferred_datetime: str = Field(description="Scheduled viewing date and time")
-    applicant_name: str = Field(description="Full name of the viewing applicant")
-    contact_phone: str = Field(description="Applicant contact number/email")
+    applicant_name: str = Field(
+        description="Full name of the viewing applicant (redacted in audit logs)"
+    )
+    contact_phone: str = Field(
+        description="Applicant contact number/email (redacted in audit logs)"
+    )
     instructions: BookingInstructions | None = Field(
         default=None, description="On-site meeting guidelines"
     )
@@ -211,6 +240,7 @@ def book_viewing_mock(
     """Books an on-site property viewing appointment with strict validation and guided error recovery.
 
     ★ CRITICAL: This is a state-mutating action requiring explicit human-in-the-loop approval.
+    All sensitive personal details (applicant name, contact phone/email) are automatically PII-redacted in audit logs.
 
     Args:
         property_id: Unique listing identifier or URL.
@@ -223,28 +253,46 @@ def book_viewing_mock(
     """
     # Guided Error Recovery: Validate required fields
     if not property_id or not property_id.strip():
-        return {
+        err_resp = {
             "status": "error",
             "error_code": "MISSING_PROPERTY_ID",
             "message": "Property ID or URL is required to schedule a viewing.",
             "recovery_guidance": "Please specify the property ID or listing URL that the user wishes to inspect before calling this tool.",
         }
+        log_structured_event(
+            event_type="audit_booking_action_failed",
+            status="error",
+            payload=err_resp,
+        )
+        return err_resp
 
     if not applicant_name or not applicant_name.strip():
-        return {
+        err_resp = {
             "status": "error",
             "error_code": "MISSING_APPLICANT_NAME",
             "message": "Applicant full name is required for viewing reservation.",
             "recovery_guidance": "Ask the user to provide their name for the viewing reservation before booking.",
         }
+        log_structured_event(
+            event_type="audit_booking_action_failed",
+            status="error",
+            payload=err_resp,
+        )
+        return err_resp
 
     if not contact_phone or not contact_phone.strip():
-        return {
+        err_resp = {
             "status": "error",
             "error_code": "MISSING_CONTACT_INFO",
             "message": "Contact phone or email is required for viewing reservation.",
             "recovery_guidance": "Ask the user to provide their contact phone number or email address to finalize the viewing reservation.",
         }
+        log_structured_event(
+            event_type="audit_booking_action_failed",
+            status="error",
+            payload=err_resp,
+        )
+        return err_resp
 
     booking_id = f"BK-{uuid.uuid4().hex[:8].upper()}"
 
@@ -273,7 +321,21 @@ def book_viewing_mock(
         },
         message=f"Viewing appointment successfully reserved for {applicant_name} on {preferred_datetime}.",
     )
-    return resp.model_dump()
+    result_dict = resp.model_dump()
+
+    # Emit critical PII-redacted audit log
+    log_structured_event(
+        event_type="audit_booking_action_confirmed",
+        status="confirmed",
+        payload={
+            "booking_id": booking_id,
+            "property_id": property_id.strip(),
+            "preferred_datetime": preferred_datetime.strip(),
+            "applicant_name": applicant_name.strip(),
+            "contact_phone": contact_phone.strip(),
+        },
+    )
+    return result_dict
 
 
 book_viewing_tool = FunctionTool(
