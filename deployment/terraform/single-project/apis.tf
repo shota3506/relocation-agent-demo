@@ -18,12 +18,15 @@ locals {
     "cloudbuild.googleapis.com",
     "run.googleapis.com",
     "bigquery.googleapis.com",
+    "bigqueryconnection.googleapis.com",
     "cloudresourcemanager.googleapis.com",
     "iam.googleapis.com",
     "serviceusage.googleapis.com",
     "logging.googleapis.com",
     "cloudtrace.googleapis.com",
     "telemetry.googleapis.com",
+    "dlp.googleapis.com",
+    "secretmanager.googleapis.com",
   ]
 }
 
@@ -36,6 +39,6 @@ resource "google_project_service" "services" {
 
 resource "google_project_service_identity" "vertex_sa" {
   provider = google-beta
-  project = var.project_id
-  service = "aiplatform.googleapis.com"
+  project  = var.project_id
+  service  = "aiplatform.googleapis.com"
 }

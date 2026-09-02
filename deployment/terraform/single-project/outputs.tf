@@ -21,3 +21,8 @@ output "logs_bucket_name" {
   description = "Logs storage bucket name"
   value       = google_storage_bucket.logs_data_bucket.name
 }
+
+output "maps_api_key_secret_id" {
+  description = "Google Maps API Key Secret Manager Secret ID"
+  value       = google_secret_manager_secret.google_maps_api_key.secret_id
+}

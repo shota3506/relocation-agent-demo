@@ -64,9 +64,17 @@ resource "google_project_iam_member" "vertex_ai_sa_permissions" {
     join(",", pair) => pair[1]
   }
 
-  project = var.project_id
-  role    = each.value
-  member  = google_project_service_identity.vertex_sa.member
+  project    = var.project_id
+  role       = each.value
+  member     = google_project_service_identity.vertex_sa.member
   depends_on = [resource.google_project_service.services]
+}
+
+# Grant Vertex AI service agent permission to act as app_sa
+resource "google_service_account_iam_member" "vertex_sa_actas" {
+  service_account_id = google_service_account.app_sa.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = google_project_service_identity.vertex_sa.member
+  depends_on         = [resource.google_project_service.services]
 }
 

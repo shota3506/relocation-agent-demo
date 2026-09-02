@@ -142,9 +142,15 @@ dmypy.json
 # PyCharm
 .idea
 
-# User-specific files
+# Terraform
+.terraform/
 .terraform*
 .Terraform*
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+crash.log
+crash.*.log
 
 
 tmp*

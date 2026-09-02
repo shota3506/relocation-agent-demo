@@ -92,6 +92,19 @@ resource "google_vertex_ai_reasoning_engine" "app" {
         name  = "GOOGLE_CLOUD_AGENT_ENGINE_ENABLE_TELEMETRY"
         value = "true"
       }
+
+      env {
+        name  = "ENABLE_CLOUD_DLP"
+        value = "true"
+      }
+
+      secret_env {
+        name = "GOOGLE_MAPS_GROUNDING_LITE_API_KEY"
+        secret_ref {
+          secret  = google_secret_manager_secret.google_maps_api_key.secret_id
+          version = "latest"
+        }
+      }
     }
 
     source_code_spec {
@@ -115,6 +128,14 @@ resource "google_vertex_ai_reasoning_engine" "app" {
     ]
   }
 
-  # Make dependencies conditional to avoid errors.
-  depends_on = [google_project_service.services]
+  # Make dependencies explicit to avoid race conditions during provisioning.
+  depends_on = [
+    google_project_service.services,
+    google_project_iam_member.app_sa_roles,
+    google_project_iam_member.vertex_ai_sa_permissions,
+    google_service_account_iam_member.vertex_sa_actas,
+    google_storage_bucket.logs_data_bucket,
+    google_secret_manager_secret_iam_member.app_sa_maps_key_accessor,
+    google_secret_manager_secret_iam_member.vertex_sa_maps_key_accessor,
+  ]
 }
